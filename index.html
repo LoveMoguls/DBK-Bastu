@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klubbbastu på trappan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE  föreningsförslag till styrelse och medlemmar: sakligt, varmt, konkret
+   IDEA   klubbens anslagstavla vid sjön: skyltlettering, granit, tjärat trä och elden i kaminen
+   PICTURE renderingen och nulägesbilden, en egen planritning, och en kalkyl där kostnad = intäkt
+   COLOUR vit grund, djupt havsblått som fält, granitgrått stöd, glödorange för det viktiga
+   TYPE   Barlow Condensed (skyltar) + Source Sans 3
+   LAYOUT bildspel i sidled; varje bild delas text/bild på laptop, staplas på mobil */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0e1519);
+--ink:light-dark(#18232a,#e9eef0);
+--mute:light-dark(#55636b,#9fb0b8);
+--sea:light-dark(#17485b,#1f5a70);
+--seaink:#ffffff;
+--granite:light-dark(#ecebe7,#1a252b);
+--line:light-dark(#d6d4cf,#2c3a42);
+--ember:light-dark(#e2531f,#ff7a45);
+--wood:light-dark(#8a6a4a,#c19b74)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 "Source Sans 3",system-ui,sans-serif;overflow:hidden}
+h1,h2,h3{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;line-height:1.05;letter-spacing:-.01em;text-wrap:balance;margin:0 0 .4em}
+h1{font-size:clamp(40px,6vw,72px)}
+h2{font-size:clamp(32px,4vw,50px)}
+h3{font-size:24px;margin-bottom:.25em}
+p{margin:0 0 .8em;max-width:62ch}
+.deck{display:flex;height:calc(100% - 60px);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none}
+.deck::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;height:100%;overflow-y:auto;scroll-snap-align:start;padding:clamp(20px,3vw,44px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto;min-height:100%}
+.center{display:flex;flex-direction:column;justify-content:center;justify-content:safe center}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:center;min-height:100%}
+.split.wide{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.photo{border-radius:6px;overflow:hidden;background:var(--granite);height:min(64vh,600px)}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.cap{font-size:14px;color:var(--mute);margin-top:8px}
+.sea{background:var(--sea);color:var(--seaink)}
+.sea .mute,.sea .cap{color:#c9dbe2}
+.mute{color:var(--mute)}
+.kicker{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:22px;color:var(--ember);margin-bottom:10px}
+.sea .kicker{color:#ffb08a}
+.lead{font-size:clamp(18px,1.6vw,21px)}
+ul.clean{list-style:none;padding:0;margin:0}
+ul.clean li{padding:10px 0;border-top:1px solid var(--line)}
+.sea ul.clean li{border-color:#ffffff33}
+ul.clean b{display:block}
+.tag{display:inline-block;font-size:14px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--granite);margin:0 6px 6px 0}
+.ok{color:light-dark(#1d6b48,#6fd3a0)}
+.warn{color:var(--ember)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.panel{background:var(--granite);border-radius:6px;padding:18px 20px}
+.big{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:clamp(40px,5vw,64px);line-height:1;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:16px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--mute);font-size:14px}
+td.n,th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+tr.sum td{font-weight:700;border-bottom:0;border-top:2px solid var(--ink)}
+.scroll{overflow-x:auto}
+.fig{position:relative;min-height:360px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+svg text{font-family:"Source Sans 3",sans-serif;paint-order:stroke;stroke:var(--bg);stroke-width:4px}
+.bars{display:grid;gap:10px;margin-top:8px}
+.brow{display:grid;grid-template-columns:7.5em minmax(0,1fr) 6.5em;gap:10px;align-items:center;font-size:15px}
+.btrack{height:30px;display:flex;border-radius:3px;overflow:hidden;background:var(--granite)}
+.btrack span{display:block;height:100%}
+.bval{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+.src{font-size:14px;color:var(--mute);margin-top:10px}
+.src a{color:inherit;text-underline-offset:2px}
+.sea .src{color:#c9dbe2}
+.sea h3{color:#fff}
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"head res" "ctl res";column-gap:clamp(20px,4vw,56px);align-content:center}
+.c-head{grid-area:head}.c-ctl{grid-area:ctl}.c-res{grid-area:res;align-self:center}
+.navl,.navr{display:flex;align-items:center;gap:10px}
+.howto{background:#ffffff14;border:1px solid #ffffff33;border-radius:6px;padding:14px 16px;margin:18px 0;font-size:16px;max-width:52ch}
+.howto b{display:block;font-size:18px;margin-bottom:4px;color:#fff}
+.howto .kbd-hint,.howto .touch-hint{display:block}
+@media(hover:hover) and (pointer:fine){.touch-hint{display:none!important}}
+@media(hover:none){.kbd-hint{display:none!important}}
+.start{min-height:48px;padding:0 22px;border:0;border-radius:6px;background:var(--ember);color:#fff;font:700 18px "Source Sans 3",sans-serif;cursor:pointer}
+.start:focus-visible,.toc button:focus-visible{outline:3px solid #ffb08a;outline-offset:2px}
+.cover h3{font-size:22px}
+.cover h1{font-size:clamp(38px,4.6vw,56px)}
+.split.tw{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+.photo.top img{object-position:50% 0}
+.toc{list-style:none;padding:0;margin:0;counter-reset:t;columns:2;column-gap:20px}
+.toc li{break-inside:avoid;counter-increment:t}
+.toc button{width:100%;min-height:44px;display:flex;gap:10px;align-items:center;text-align:left;background:none;border:0;border-top:1px solid #ffffff2e;color:#fff;font:600 16px "Source Sans 3",sans-serif;cursor:pointer;padding:6px 2px}
+.toc button::before{content:counter(t);font:700 20px "Barlow Condensed",sans-serif;color:#ffb08a;min-width:1.6em}
+.toc button:hover{color:#ffb08a}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;margin-top:10px;color:var(--mute)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.ctl{display:grid;gap:6px}
+.ctl label{display:flex;justify-content:space-between;font-weight:600;font-size:15px}
+.ctl output{font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;height:44px;accent-color:var(--ember);margin:0}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{min-height:44px;padding:0 16px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:600 16px "Source Sans 3",sans-serif;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--sea);color:#fff;border-color:var(--sea)}
+.seg button:focus-visible,.nav button:focus-visible{outline:3px solid var(--ember);outline-offset:2px}
+.result{background:var(--sea);color:#fff;border-radius:6px;padding:22px}
+.result .row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid #ffffff2a;font-variant-numeric:tabular-nums}
+.result .row:last-child{border:0}
+.zero{font-family:"Barlow Condensed",sans-serif;font-size:clamp(48px,6vw,80px);font-weight:700;line-height:1;color:#ffb08a}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+.steps li{counter-increment:s;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.steps li::before{content:counter(s);font:700 28px "Barlow Condensed",sans-serif;color:var(--ember)}
+.nav{height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 max(5vw,16px);border-top:1px solid var(--line);background:var(--bg)}
+.nav button{min-width:44px;min-height:44px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:600 16px "Source Sans 3",sans-serif;cursor:pointer;padding:0 14px}
+.nav button:disabled{opacity:.35;cursor:default}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dots button{width:12px;height:12px;min-width:0;min-height:0;padding:0;border-radius:99px;border:0;background:var(--line)}
+.dots button[aria-current=true]{background:var(--ember);width:28px}
+.count{font-variant-numeric:tabular-nums;color:var(--mute);font-size:15px;white-space:nowrap}
+.flame{transform-origin:50% 100%;animation:fl 2.4s ease-in-out infinite alternate}
+@keyframes fl{from{transform:scaleY(.92)}to{transform:scaleY(1.06)}}
+@media(prefers-reduced-motion:reduce){.flame{animation:none}.deck{scroll-behavior:auto}}
+@media(max-width:860px){.split,.split.wide,.split.tw{grid-template-columns:minmax(0,1fr);align-items:start}.photo{height:46vh}.grid3{grid-template-columns:minmax(0,1fr)}}
+.mfee{display:none}
+@media(max-width:860px){.calc{grid-template-columns:minmax(0,1fr);grid-template-areas:"head" "ctl" "res";row-gap:18px}.mfee{display:flex;justify-content:space-between;align-items:baseline;position:sticky;top:-1px;z-index:2;background:var(--sea);color:#fff;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-weight:600}.mfee b{font:700 30px "Barlow Condensed",sans-serif;color:#ffb08a;white-space:nowrap}.toc{columns:1}}
+@media(max-width:600px){.grid2{grid-template-columns:minmax(0,1fr)}.brow{grid-template-columns:6.8em minmax(0,1fr) 5.2em;font-size:14px}table{font-size:14px}th,td{padding:6px 4px}.dots{display:none}}
+</style>
+</head>
+<body>
+<main class="deck" id="deck" tabindex="-1">
+
+<!-- Omslag med innehåll -->
+<section class="slide sea cover" aria-label="Start och innehåll">
+ <div class="wrap split">
+  <div>
+   <div class="kicker">Förslag till Drottninghamns båtklubb</div>
+   <h1>En vedeldad klubbbastu ovanför betongtrappan</h1>
+   <p class="lead">Ett förslag om att ersätta det gamla skärmtaket med en bastu för medlemmarna, finansierad helt till självkostnad.</p>
+   <p class="mute">Christopher Åhl, medlem · november 2026</p>
+   <div class="howto">
+    <b><span id="nSlides"></span> bilder · ca 10 minuter</b>
+    <span class="kbd-hint">Bläddra med pilknapparna längst ner eller piltangenterna.</span>
+    <span class="touch-hint">Svep åt sidan för att bläddra.</span>
+    Klicka på en rubrik i innehållet för att hoppa direkt dit, och på knappen Innehåll för att komma tillbaka hit.
+   </div>
+   <button type="button" class="start" id="startBtn">Börja läsa →</button>
+  </div>
+  <nav aria-label="Innehåll"><h3>Innehåll</h3><ol class="toc" id="toc"></ol></nav>
+ </div>
+</section>
+
+<!-- Idén -->
+<section class="slide" aria-label="Idén">
+ <div class="wrap split wide">
+  <div>
+   <div class="kicker">Idén</div>
+   <h2>Det gamla skärmtaket blir klubbens samlingspunkt året runt</h2>
+   <p class="lead">Vi bygger på den gjutna grunden ovanför betongtrappan, med panoramafönster mot inloppet och en vedeldad kamin.</p>
+   <p class="lead">Bastun ska <b>inte</b> ge vinst. Avgifterna sätts så att de betalar av investeringen och täcker driften, varken mer eller mindre.</p>
+  </div>
+  <div>
+   <div class="photo"><img src="render.jpg" alt="Visualisering av en grå bastu i stående panel med svart plåttak, panoramafönster och vedförråd, på betongtrappan vid hamnplanen"></div>
+   <div class="cap">Visualisering, inte ritning. Utformningen bestäms i projekteringen.</div>
+  </div>
+ </div>
+</section>
+
+<!-- Varför nu -->
+<section class="slide" aria-label="Efterfrågan">
+ <div class="wrap split">
+  <div>
+   <div class="kicker">Varför nu</div>
+   <h2>Folk står i kö för att få basta. Vi har platsen</h2>
+   <p class="lead">Bastu har fått ett rejält uppsving i Stockholmsområdet. Föreningsbastur vid vattnet har långa köer, och kommunerna har svårt att hinna med.</p>
+   <p>Här hemma pratas det om bastu i de lokala Skurugrupperna, till exempel Skuru morsor (ca 300 medlemmar) och Skuru hockey (ca 30). Bastuföreningarna i närområdet beskrivs som fulltecknade.</p>
+   <p class="mute" style="font-size:15px">En klubbbastu ger våra medlemmar det som andra står i kö för, och kan bli ett skäl för nya att söka sig till klubben.</p>
+  </div>
+  <div>
+   <h3>Köer till föreningsbastur i Stockholm</h3>
+   <div class="bars" id="queueBars"></div>
+   <p class="cap" style="margin-top:14px">Antal personer i kö. Vinterviken enligt Fokus 2026, Fredhällsbadet enligt SVT (början av 2025), Tanto vid Årstaviken: ca 600 medlemmar enligt föreningen.</p>
+   <div class="src">Källor: <a href="https://www.fokus.se/nyheter/privata-aktorer-fastnar-i-stockholms-bastu-byrakrati/">Fokus</a> · <a href="https://www.svt.se/nyheter/uutiset/svenska/trafikborgarradet-ska-gora-stockholm-till-en-bastustad">SVT</a> · <a href="https://www.mitti.se/nyheter/bastufeber-i-stockholm--tusentals-star-i-ko-6.3.230019.c4d6fde3a4">Mitt i</a> · <a href="https://www.tantobastuforening.se/">Tanto bastuförening</a></div>
+  </div>
+ </div>
+</section>
+
+<!-- Hälsa och gemenskap -->
+<section class="slide sea" aria-label="Hälsa och gemenskap">
+ <div class="wrap split">
+  <div>
+   <div class="kicker">Hälsa och gemenskap</div>
+   <h2>Bastu och kallbad är bra för kroppen, och för klubben</h2>
+   <ul class="clean">
+    <li><b>Hjärtat</b>En finsk studie med 1 688 män och kvinnor följda i många år: de som bastade 2–3 gånger i veckan hade omkring 30 % lägre risk att dö i hjärt-kärlsjukdom än de som bastade en gång. Ju fler minuter i veckan, desto lägre risk.</li>
+    <li><b>Kallbad</b>En forskningsöversikt från 2025 (11 studier, 3 177 deltagare) fann effekter på stress, sömn och livskvalitet, och 29 % färre sjukdagar bland dem som duschade kallt.</li>
+    <li><b>Mötesplats</b>Bastun växer som social yta, ett alkoholfritt sätt att träffas och ett motmedel mot ensamhet.</li>
+   </ul>
+   <p class="cap">Studierna visar samband, inte bevisad orsak. Den som har hjärtproblem bör prata med sin läkare innan bastu och kallbad.</p>
+  </div>
+  <div>
+   <h3 style="color:#fff">Risk att dö i hjärt-kärlsjukdom</h3>
+   <p class="mute" style="font-size:15px;margin-bottom:6px">Jämfört med 1 bastubad i veckan (= 100)</p>
+   <div class="bars" id="healthBars"></div>
+   <div class="src" style="margin-top:18px">Källor: <a href="https://link.springer.com/article/10.1186/s12916-018-1198-0">Laukkanen m.fl., BMC Medicine 2018</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/25705824/">JAMA Internal Medicine 2015</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/39879231/">Cain m.fl., PLOS One 2025</a> · <a href="https://www.globalwellnesssummit.com/?p=48774">Global Wellness Summit</a></div>
+  </div>
+ </div>
+</section>
+
+<!-- Läget och trygghet -->
+<section class="slide" aria-label="Läget och trygghet">
+ <div class="wrap center">
+  <div class="kicker">Läget och tryggheten</div>
+  <h2>Kvällssol över inloppet, och fler ögon på båtarna</h2>
+  <div class="grid2" style="margin-top:12px">
+   <div class="panel"><h3>Ett av klubbens bästa lägen</h3><p>Utsikt mot inloppet till Stockholm och sol långt in på sommarkvällarna. Platsen framför trappan passar för en enkel grillplats, så bastun blir en samlingspunkt för hela klubben och inte bara för de som badar.</p></div>
+   <div class="panel"><h3>Mer liv i hamnen ger färre stölder</h3><p>Polisen konstaterar att Sverige har haft flest båtstölder i Europa och att båtklubbar som arbetar förebyggande drabbas betydligt mindre. Risken ökar när färre rör sig i hamnen, på hösten och i mörker. Det är precis då bastun används som mest.</p></div>
+  </div>
+  <div class="src" style="margin-top:14px">Källor: <a href="https://polisen.se/aktuellt/nyheter/mitt/2026/maj/battjuvarnas-basta-tid-ar-nu---sa-manga-stolder-drabbar-region-mitt/">Polisen, maj 2026</a> · <a href="https://polisen.se/aktuellt/nyheter/mitt/2026/augusti/batrelaterade-stolder/">Polisen, augusti 2026</a></div>
+ </div>
+</section>
+
+<!-- 2 Nuläge -->
+<section class="slide" aria-label="Nuläge">
+ <div class="wrap split">
+  <div class="photo top"><img src="nulage.jpg" alt="Det befintliga rödmålade skärmtaket med flagnande färg på betongplattformen ovanför den mossiga trappan, med en skiss av bastun ovanpå"></div>
+  <div>
+   <div class="kicker">Nuläge</div>
+   <h2>Skärmtaket är slitet, men grunden är värd att bygga på</h2>
+   <ul class="clean">
+    <li><b class="warn">Stommen behöver rivas</b>Flagnande färg, öppen konstruktion och enkelt plåttak. Virket går inte att återanvända till en sluten byggnad.</li>
+    <li><b class="ok">Grunden och trappan finns redan</b>Gjuten platta och betongtrappa ger en färdig plats med utsikt över hamnen. Den behöver inspekteras och lagas, inte göras om.</li>
+    <li><b class="ok">Klubben äger marken, vilket är ovanligt</b>De flesta båtklubbar i området arrenderar sin mark av kommunen. Vi äger vår, så ingen kan säga upp arrendet eller ta tillbaka platsen. Det gör det tryggt att investera och betala av på tio år, och ingen markägare behöver godkänna bygget.</li>
+    <li><b>Löst virke ligger på marken</b>Det städas bort i samband med rivningen.</li>
+   </ul>
+  </div>
+ </div>
+</section>
+
+<!-- 3 Förslaget / plan -->
+<section class="slide" aria-label="Förslaget">
+ <div class="wrap split wide">
+  <div>
+   <div class="kicker">Förslaget</div>
+   <h2>Två rum: ett basturum och ett relaxrum</h2>
+   <ul class="clean">
+    <li><b>Basturum</b>Lavar i två nivåer för 8 till 10 personer, panoramafönster mot marinan och vedeldad kamin med stort stenmagasin.</li>
+    <li><b>Relax och omklädning</b>Bänkar, krokar och vedförråd. Robust panel som tål blöta fötter och seglarstövlar.</li>
+    <li><b>Teknik</b>Helisolerad stålskorsten, självdragsventilation, brandskyddsskivor kring kaminen enligt tillverkarens anvisning.</li>
+    <li><b>Utsida</b>Stående panel som får grånas, isolerat plåttak som dämpar regnljud.</li>
+   </ul>
+  </div>
+  <div>
+   <div class="fig" id="planFig" style="min-height:420px" role="img" aria-label="Planskiss: basturum till vänster med lavar, kamin och panoramafönster mot hamnen, relaxrum till höger med bänk och vedförråd, entré från trappan"><svg id="plan"></svg></div>
+   <div class="cap">Principskiss, inte skalenlig. Ytan avgörs av vad grunden bär (se nästa bild).</div>
+  </div>
+ </div>
+</section>
+
+<!-- 4 Analys -->
+<section class="slide" aria-label="Analys av underlaget">
+ <div class="wrap center">
+  <div class="kicker">Vad underlaget säger, och inte säger</div>
+  <h2>Idén håller. Fyra saker måste redas ut innan vi bestämmer storlek</h2>
+  <div class="grid2" style="margin-top:12px">
+   <div class="panel"><h3>Plattformen är mindre än bastun</h3><p>Den gjutna ytan ser ut att vara 8 till 12 kvm. Med 20 till 30 kvm får vi gott om plats för relaxdel och vedförråd, men då måste vi bygga ut mot berget eller åt sidan, med nya plintar och mer material.</p></div>
+   <div class="panel"><h3>Kaminen måste passa rummet</h3><p>10 kvm basturum med normal takhöjd blir över 20 kubikmeter, och glas räknas som extra volym. Det kräver en större kamin än Legend 240, som är byggd för <span style="white-space:nowrap">10–20 m³</span>, eller ett mindre basturum.</p></div>
+   <div class="panel"><h3>Ritningen är en bild, inte en ritning</h3><p>Den AI-gjorda ritningen visar en stämning men har felstavade texter och inga verkliga mått. Vi behöver en konstruktör som mäter upp grunden.</p></div>
+   <div class="panel"><h3>Kalkylen saknades</h3><p>Underlaget slutade före siffrorna. Därför har jag tagit fram en egen bedömning för två alternativ på nästa bild.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- 5 Kostnad -->
+<section class="slide" aria-label="Kostnad">
+ <div class="wrap split">
+  <div>
+   <div class="kicker">Vad det kostar</div>
+   <h2>Mellan 205 000 och 280 000 kronor, beroende på storlek</h2>
+   <div class="grid2" style="margin:8px 0 14px">
+    <div><div class="big">205 000</div><div class="mute">A · ca 12 kvm på befintlig grund</div></div>
+    <div><div class="big" style="color:var(--ember)">280 000</div><div class="mute">B · ca 20 kvm, utbyggd grund</div></div>
+   </div>
+   <p class="mute" style="font-size:15px">Bedömning med materialpriser från byggvaruhus och ideellt arbete av medlemmar. Anlitar vi en entreprenör för hela bygget blir det dyrare. Som jämförelse kostar en färdig bastustuga med panoramafönster och vedkamin omkring 230 000 kr levererad, utan grundarbete. En Legend 240-kamin kostar runt 10 000 kr.</p>
+  </div>
+  <div class="scroll">
+   <table>
+    <thead><tr><th>Post</th><th class="n">A · 12 kvm</th><th class="n">B · 20 kvm</th></tr></thead>
+    <tbody id="costBody"></tbody>
+   </table>
+  </div>
+ </div>
+</section>
+
+<!-- 6 Ekonomi (kärnbudskap) -->
+<section class="slide sea" aria-label="Ekonomisk princip">
+ <div class="wrap split tw">
+  <div>
+   <div class="kicker">Så tänker vi kring pengarna</div>
+   <h2>Bastun är till för medlemmarna. Den ska gå jämnt ut, inte gå med vinst</h2>
+   <p class="lead">Varje krona som kommer in från bastukort och gästbad har bara två uppgifter:</p>
+   <ul class="clean">
+    <li><b>1. Betala av investeringen</b>Lån eller uttag ur klubbens fond betalas tillbaka på ett bestämt antal år.</li>
+    <li><b>2. Täcka den löpande driften</b>Ved, försäkring, sotning, städning och en underhållsfond så att bastun håller.</li>
+    <li><b>Investeringen stannar hos medlemmarna</b>Eftersom klubben äger marken bygger vi på vår egen mark. Bastun blir en tillgång som ingen kan ta ifrån klubben när den är avbetald.</li>
+    <li><b>Blir det över, sänks avgiften</b>Ett överskott går tillbaka till medlemmarna genom lägre avgift nästa år, eller till underhållsfonden. Inget annat.</li>
+   </ul>
+  </div>
+  <div aria-label="Illustration: intäkter lika med kostnader">
+   <svg viewBox="0 0 400 360" style="width:100%;max-height:46vh" role="img" aria-label="En våg i balans: på ena sidan avbetalning och drift, på andra sidan avgifter">
+    <rect x="195" y="70" width="10" height="230" fill="#ffffff" opacity=".9"/>
+    <rect x="140" y="296" width="120" height="16" rx="3" fill="#ffffff" opacity=".9"/>
+    <rect x="40" y="64" width="320" height="10" rx="5" fill="#ffffff"/>
+    <circle cx="200" cy="69" r="12" fill="#ffb08a"/>
+    <line x1="80" y1="74" x2="60" y2="170" stroke="#fff" stroke-width="2"/><line x1="80" y1="74" x2="100" y2="170" stroke="#fff" stroke-width="2"/>
+    <line x1="320" y1="74" x2="300" y2="170" stroke="#fff" stroke-width="2"/><line x1="320" y1="74" x2="340" y2="170" stroke="#fff" stroke-width="2"/>
+    <path d="M40 170 h80 a40 22 0 0 1 -80 0z" fill="#ffffff" opacity=".95"/>
+    <path d="M280 170 h80 a40 22 0 0 1 -80 0z" fill="#ffffff" opacity=".95"/>
+    <rect x="52" y="122" width="56" height="22" rx="3" fill="#7fb3c7"/><rect x="52" y="146" width="56" height="22" rx="3" fill="#ffb08a"/>
+    <rect x="292" y="122" width="56" height="46" rx="3" fill="#d9e6ea"/>
+    <text x="80" y="222" text-anchor="middle" fill="#fff" font-size="17" font-weight="600" style="stroke:#17485b">Kostnader</text>
+    <text x="80" y="242" text-anchor="middle" fill="#c9dbe2" font-size="14" style="stroke:#17485b">avbetalning + drift</text>
+    <text x="320" y="222" text-anchor="middle" fill="#fff" font-size="17" font-weight="600" style="stroke:#17485b">Intäkter</text>
+    <text x="320" y="242" text-anchor="middle" fill="#c9dbe2" font-size="14" style="stroke:#17485b">bastukort + gäster</text>
+    <text x="200" y="345" text-anchor="middle" fill="#ffb08a" font-size="26" font-weight="700" style="stroke:#17485b;font-family:'Barlow Condensed',sans-serif">Resultat: 0 kr</text>
+   </svg>
+  </div>
+ </div>
+</section>
+
+<!-- Drift med teknik -->
+<section class="slide" aria-label="Enkel drift">
+ <div class="wrap split">
+  <div>
+   <div class="kicker">Så sköts den</div>
+   <h2>Det som förr var krångligt sköts nu i en app</h2>
+   <p class="lead">Förr gjorde nycklar, listor och städscheman en föreningsbastu till ett heltidsjobb för styrelsen. I dag finns färdiga system, och samma typ av bokning används redan för bastur och tvättstugor i bostadsrättsföreningar.</p>
+   <p>Bokningssystem som kan kopplas till lås finns från några hundralappar i månaden.</p>
+   <div class="src">Exempel: <a href="https://www.assaabloy.com/se/en/solutions/products/flerbostad/booking/bokning-smartphone">ASSA ABLOY Aptus Bokning</a> · <a href="https://www.spiris.se/bokamera">BokaMera</a></div>
+  </div>
+  <ol class="steps">
+   <li><div><b>Boka i mobilen</b><br>Medlemmen bokar ett pass. Familjepass, damkväll eller öppen kväll läggs upp som olika passtyper.</div></li>
+   <li><div><b>Koden gäller bara under passet</b><br>Ett digitalt kodlås öppnar för den som har bokat. Ingen nyckel ska lämnas över, och varje öppning loggas.</div></li>
+   <li><div><b>Foto vid utcheckning</b><br>Den som bastat laddar upp en bild på rummet när den går. Då syns direkt om något behöver åtgärdas.</div></li>
+   <li><div><b>Klubbens ungdomar kontrollerar</b><br>Ungdomar i klubben gör städkontroll och extrastädning mot ersättning. De får ett första extraknäck och klubben en bastu som alltid är ren.</div></li>
+  </ol>
+ </div>
+</section>
+
+<!-- 7 Kalkylator -->
+<section class="slide" aria-label="Räkna på avgiften">
+ <div class="wrap calc">
+  <div class="c-head">
+   <div class="kicker">Räkna själv</div>
+   <h2>Avgiften räknas baklänges från kostnaden</h2>
+  </div>
+  <div class="c-ctl">
+   <div class="mfee" aria-hidden="true"><span>Bastukort per år</span><b id="fee2"></b></div>
+   <div class="ctl">
+    <div><div style="font-weight:600;font-size:15px;margin-bottom:6px">Alternativ</div>
+     <div class="seg" id="alt"><button type="button" id="altA" aria-pressed="false" data-v="205000">A · 205 000 kr</button><button type="button" id="altB" aria-pressed="true" data-v="280000">B · 280 000 kr</button></div></div>
+    <div><label for="kort">Medlemmar med bastukort <output id="kortO"></output></label><input type="range" id="kort" min="20" max="150" step="5" value="60"></div>
+    <div><label for="ar">Avbetalningstid <output id="arO"></output></label><input type="range" id="ar" min="5" max="20" step="1" value="10"></div>
+    <div><label for="ranta">Ränta (0 % om vi tar ur egen fond) <output id="rantaO"></output></label><input type="range" id="ranta" min="0" max="7" step="0.5" value="4"></div>
+    <div><label for="gast">Gästbad och uthyrning per år <output id="gastO"></output></label><input type="range" id="gast" min="0" max="40000" step="1000" value="10000"></div>
+   </div>
+  </div>
+  <div class="c-res">
+   <div class="result" aria-live="polite">
+    <div style="font-size:15px;color:#c9dbe2">Bastukort per medlem och år</div>
+    <div class="zero" id="fee"></div>
+    <div style="color:#c9dbe2;margin-bottom:12px" id="feeM"></div>
+    <div class="row"><span>Avbetalning och ränta per år</span><b id="capR"></b></div>
+    <div class="row"><span>Drift per år</span><b>32 500 kr</b></div>
+    <div class="row"><span>Minus gästbad och uthyrning</span><b id="gastR"></b></div>
+    <div class="row"><span>Klubbens resultat</span><b style="color:#ffb08a">0 kr</b></div>
+   </div>
+   <div class="bars" style="margin-top:18px">
+    <div class="brow"><span>Kostnader</span><div class="btrack" id="bc"></div><span class="bval" id="bcv"></span></div>
+    <div class="brow"><span>Intäkter</span><div class="btrack" id="bi"></div><span class="bval" id="biv"></span></div>
+   </div>
+   <div class="legend"><span><i style="background:var(--sea)"></i>Avbetalning och ränta</span><span><i style="background:var(--wood)"></i>Drift</span><span><i style="background:var(--ember)"></i>Bastukort</span><span><i style="background:#9fb7c1"></i>Gäster</span></div>
+   <p style="margin-top:14px" id="after"></p>
+   <p class="mute" style="font-size:14px">Drift antas till 32 500 kr per år: underhållsfond 10 000, ved 8 000, städkontroll av klubbens ungdomar 6 000, bokningssystem och digitalt lås 3 500, försäkring 3 000, sotning och brandskydd 2 000.</p>
+  </div>
+ </div>
+</section>
+
+<!-- 8 Tillstånd och risker -->
+<section class="slide" aria-label="Tillstånd och risker">
+ <div class="wrap center">
+  <div class="kicker">Tillstånd och risker</div>
+  <h2>Det här behöver vi ha klart innan första spadtaget</h2>
+  <div class="grid2" style="margin-top:12px">
+   <div class="panel"><h3>Bygglov, inte attefall</h3><p>Attefallsreglerna gäller bara på en tomt med ett en- eller tvåbostadshus, alltså villor och fritidshus. Klubbens mark räknas inte dit, så även med 20 till 30 kvm behöver vi bygglov och anmäla eldstaden. Nacka kommun avslog 2023 en ansökan om en kommersiell flytande bastu vid Sickla strand, så vår ansökan behöver vara gedigen. Vårt läge är ett annat: en ideell klubb på egen mark som ersätter en befintlig byggnad.</p></div>
+   <div class="panel"><h3>Strandskydd</h3><p>Vid vattnet gäller strandskydd. Det talar för oss att klubben äger marken, redan använder platsen och att vi ersätter en befintlig byggnad. Kommunen har tidigare gett dispens till en båtklubb med motiveringen att platsens värde för strandskyddet var litet.</p></div>
+   <div class="panel"><h3>Brand och säkerhet</h3><p>Skorsten och avstånd enligt tillverkaren, besiktning av sotare innan första eldning, ordningsregler för eldning och en ansvarig per pass.</p></div>
+   <div class="panel"><h3>Grunden är största osäkerheten</h3><p>Därför börjar vi med en uppmätning innan vi väljer storlek. Resten av kalkylen bygger på kända priser.</p></div>
+  </div>
+  <div class="src" style="margin-top:14px">Källor: <a href="https://www.boverket.se/sv/pbl-kunskapsbanken/lov--byggande/anmalningsplikt/bygglovbefriade-atgarder/en--och-tvabostad_tomt/en_tvabostad">Boverket om en- och tvåbostadshus</a> · <a href="https://handlingar.nacka.se/handlingar/Miljo_och_stadsbyggnadsnamndens_myndighetsutskott/2023/20231206/17_bygglov_Sickla%C3%B6n_40_12_bastu/17_a_bygglov_Sickla%C3%B6n_40_12_tjskr.pdf">Nacka kommun, avslag Sickla 2023</a> · <a href="https://handlingar.nacka.se/Handlingar/Miljo_och_stadsbyggnadsnamndens_myndighetsutskott/2019/20190604/03_milj%C3%B6_strandskydd_Sickla%C3%B6n_39_1_Nacka_BK_Kajakst%C3%A4llning/03_a_milj%C3%B6_strandskydd_Sickla%C3%B6n_39_1_kajakst%C3%A4llning_tjskr.pdf">Nacka kommun, dispens Nacka båtklubb</a></div>
+ </div>
+</section>
+
+<!-- 9 Beslut -->
+<section class="slide sea" aria-label="Förslag till beslut">
+ <div class="wrap split">
+  <div>
+   <div class="kicker">Förslag till beslut</div>
+   <h2>Jag föreslår att styrelsen går vidare i tre steg</h2>
+   <p class="lead">Inget byggbeslut nu. Först fakta om grund och tillstånd, sedan ett skarpt förslag till årsmötet med exakt kostnad och avgift.</p>
+  </div>
+  <ol class="steps" style="--line:#ffffff33">
+   <li><div><b>Arbetsgrupp och uppmätning</b><br>Tillsätt en liten bastugrupp. Låt en konstruktör mäta upp grunden och bedöma om A eller B är rimligt.</div></li>
+   <li><div><b>Förhandsbesked från kommunen</b><br>Stäm av bygglov och strandskydd innan vi lägger pengar på ritningar.</div></li>
+   <li><div><b>Skarpt förslag till årsmötet</b><br>Ritning, offert, avbetalningsplan och avgift enligt självkostnadsprincipen. Medlemmarna beslutar.</div></li>
+   <li><div><b>Bygg med medlemmarna</b><br>Rivning och montering som arbetsdagar. Det sänker kostnaden och gör bastun till vår.</div></li>
+  </ol>
+ </div>
+</section>
+
+</main>
+<nav class="nav" aria-label="Bildspel">
+ <div class="navl"><button type="button" id="prev" aria-label="Föregående bild">←</button><button type="button" id="tocBtn">Innehåll</button></div>
+ <div class="dots" id="dots"></div>
+ <div class="navr"><span class="count" id="count"></span><button type="button" id="next" aria-label="Nästa bild">→</button></div>
+</nav>
+
+<script>
+{
+const kr=n=>Math.round(n).toLocaleString('sv-SE').replace(/ /g,' ')+' kr';
+const costs=[
+ ['Rivning och bortforsling',10000,10000],
+ ['Lagning av betong, nya plintar',10000,25000],
+ ['Stomme, isolering, ytterpanel, plåttak',60000,90000],
+ ['Bastuinredning: asppanel, lavar, glasdörr',35000,45000],
+ ['Panoramafönster och ytterdörr',15000,20000],
+ ['Kamin, stenar, skorsten, brandskydd',25000,30000],
+ ['El, belysning och digitalt kodlås',12000,14000],
+ ['Konstruktör, bygglov, dispens, besiktning',20000,20000],
+ ['Oförutsett, ca 10 %',18000,26000]];
+const tA=costs.reduce((s,c)=>s+c[1],0),tB=costs.reduce((s,c)=>s+c[2],0);
+document.getElementById('costBody').innerHTML=costs.map(c=>`<tr><td>${c[0]}</td><td class="n">${kr(c[1])}</td><td class="n">${kr(c[2])}</td></tr>`).join('')+`<tr class="sum"><td>Totalt</td><td class="n">${kr(tA)}</td><td class="n">${kr(tB)}</td></tr>`;
+
+/* stapelrader */
+const rows=(id,data,max,col,fmt)=>{document.getElementById(id).innerHTML=data.map(d=>`<div class="brow"><span>${d[0]}</span><div class="btrack"><span style="width:${(d[1]/max*100).toFixed(1)}%;background:${d[2]||col}"></span></div><span class="bval">${fmt(d[1])}</span></div>`).join('');};
+rows('queueBars',[['Vinterviken',13000],['Fredhällsbadet',1600]],13000,'var(--ember)',v=>v.toLocaleString('sv-SE').replace(/ /g,' ')+' st');
+rows('healthBars',[['1 gång/v',100,'#d9e6ea'],['2–3 gånger',71,'#ffb08a'],['4–7 gånger',30,'#ff7a45']],100,'#fff',v=>String(v));
+
+/* plan */
+const s=document.getElementById('plan');
+const drawPlan=()=>{const W=s.clientWidth,H=s.clientHeight;if(!W||!H)return;
+ const m=W<520?14:24,x0=m,y0=m+28,w=W-2*m,h=H-y0-m-34,wa=w*.52;
+ const lab=(x,y,t,sz,c,a)=>`<text x="${x}" y="${y}" font-size="${sz}" fill="${c||'var(--ink)'}" text-anchor="${a||'middle'}" font-weight="600">${t}</text>`;
+ let o=`<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="var(--granite)" stroke="var(--ink)" stroke-width="6"/>`;
+ o+=`<line x1="${x0+wa}" y1="${y0}" x2="${x0+wa}" y2="${y0+h}" stroke="var(--ink)" stroke-width="4"/>`;
+ o+=`<rect x="${x0+wa-3}" y="${y0+h*.62}" width="6" height="${h*.2}" fill="var(--granite)"/>`;
+ o+=`<line x1="${x0+12}" y1="${y0}" x2="${x0+wa-12}" y2="${y0}" stroke="#7fb3c7" stroke-width="9"/>`;
+ o+=lab(x0+wa/2,y0-10,'Panoramafönster mot hamnen',W<520?13:14,'var(--mute)');
+ const lw=Math.min(w*.13,70);
+ o+=`<rect x="${x0+6}" y="${y0+8}" width="${lw}" height="${h-16}" fill="var(--wood)" opacity=".55"/>`;
+ o+=`<rect x="${x0+6+lw}" y="${y0+8}" width="${lw*.75}" height="${h-16}" fill="var(--wood)" opacity=".3"/>`;
+ const kx=x0+wa-Math.min(70,wa*.28),ky=y0+h-Math.min(80,h*.3);
+ o+=`<rect x="${kx}" y="${ky}" width="${Math.min(54,wa*.22)}" height="${Math.min(54,wa*.22)}" rx="4" fill="var(--ink)"/>`;
+ const fs=Math.min(54,wa*.22);
+ o+=`<path class="flame" d="M${kx+fs/2} ${ky+fs*.2} C${kx+fs*.85} ${ky+fs*.55} ${kx+fs*.7} ${ky+fs*.85} ${kx+fs/2} ${ky+fs*.85} C${kx+fs*.3} ${ky+fs*.85} ${kx+fs*.15} ${ky+fs*.55} ${kx+fs/2} ${ky+fs*.2}z" fill="var(--ember)"/>`;
+ o+=lab(x0+wa*.62,y0+h*.4,'Basturum',W<520?15:18);
+ o+=lab(x0+wa*.62,y0+h*.4+20,'8–10 platser',13,'var(--mute)');
+ o+=lab(kx+fs/2,ky-8,'Kamin',13,'var(--mute)');
+ o+=lab(x0+6+lw,y0+h-14,'Lavar',13,'var(--mute)','start');
+ const rx=x0+wa;
+ o+=`<rect x="${rx+10}" y="${y0+10}" width="${(w-wa)-20}" height="${Math.min(30,h*.12)}" fill="var(--wood)" opacity=".45"/>`;
+ o+=lab(rx+(w-wa)/2,y0+10+Math.min(30,h*.12)+18,'Bänk och krokar',13,'var(--mute)');
+ const vw=Math.min(46,(w-wa)*.28);
+ o+=`<rect x="${x0+w-vw-8}" y="${y0+h*.45}" width="${vw}" height="${h*.45}" fill="var(--wood)"/>`;
+ o+=lab(x0+w-vw/2-8,y0+h*.45-8,'Ved',13,'var(--mute)');
+ o+=lab(rx+(w-wa)*.42,y0+h*.6,'Relax',W<520?15:18);
+ o+=lab(rx+(w-wa)*.42,y0+h*.6+20,'omklädning',13,'var(--mute)');
+ const dx=rx+(w-wa)*.25;
+ o+=`<rect x="${dx}" y="${y0+h-3}" width="${(w-wa)*.3}" height="6" fill="var(--bg)"/>`;
+ o+=`<path d="M${dx+(w-wa)*.15} ${y0+h+30} l0 -18 m-7 7 l7 -7 l7 7" stroke="var(--ember)" stroke-width="3" fill="none"/>`;
+ o+=lab(dx+(w-wa)*.15+14,y0+h+28,'Entré från trappan',13,'var(--ember)','start');
+ s.innerHTML=o;};
+const roPlan=new ResizeObserver(drawPlan);roPlan.observe(s);
+
+/* kalkyl */
+const $=id=>document.getElementById(id);
+let inv=280000;const DRIFT=32500;
+const calc=()=>{const n=+$('kort').value,y=+$('ar').value,r=+$('ranta').value/100,g=+$('gast').value;
+ const cap=r===0?inv/y:inv*r/(1-Math.pow(1+r,-y));
+ const need=cap+DRIFT;const fee=Math.max(0,(need-g)/n);const feeR=Math.ceil(fee/10)*10;
+ const kortInk=need-g;
+ $('kortO').textContent=n+' st';$('arO').textContent=y+' år';$('rantaO').textContent=(r*100).toLocaleString('sv-SE')+' %';$('gastO').textContent=kr(g);
+ $('fee').textContent=kr(feeR);$('fee2').textContent=kr(feeR);$('feeM').textContent='ca '+kr(feeR/12)+' i månaden';
+ $('capR').textContent=kr(cap);$('gastR').textContent='− '+kr(Math.min(g,need));
+ const mx=need;const p=v=>(v/mx*100).toFixed(2)+'%';
+ $('bc').innerHTML=`<span style="width:${p(cap)};background:var(--sea)"></span><span style="width:${p(DRIFT)};background:var(--wood)"></span>`;
+ $('bi').innerHTML=`<span style="width:${p(Math.max(0,kortInk))};background:var(--ember)"></span><span style="width:${p(Math.min(g,need))};background:#9fb7c1"></span>`;
+ $('bcv').textContent=kr(need);$('biv').textContent=kr(need);
+ const after=Math.max(0,Math.ceil((DRIFT-g)/n/10)*10);
+ $('after').innerHTML=`<b>Efter ${y} år är bastun betald.</b> Då behöver avgiften bara täcka driften och kan sänkas till ungefär <b style="white-space:nowrap">${kr(after)}</b> per år.`;};
+for(const b of document.querySelectorAll('#alt button'))b.addEventListener('click',()=>{inv=+b.dataset.v;for(const x of document.querySelectorAll('#alt button'))x.setAttribute('aria-pressed',x===b);calc();});
+for(const id of ['kort','ar','ranta','gast'])$(id).addEventListener('input',calc);
+calc();
+
+/* bildspel */
+const deck=$('deck'),slides=[...deck.querySelectorAll('.slide')],dots=$('dots');
+$('nSlides').textContent=slides.length;
+$('toc').innerHTML=slides.slice(1).map((sl,i)=>`<li><button type="button" data-i="${i+1}">${sl.getAttribute('aria-label')}</button></li>`).join('');
+for(const b of document.querySelectorAll('#toc button'))b.addEventListener('click',()=>go(+b.dataset.i));
+dots.innerHTML=slides.map((sl,i)=>`<button type="button" aria-label="Bild ${i+1}: ${sl.getAttribute('aria-label')}"></button>`).join('');
+const db=[...dots.children];
+let cur=0;
+const go=i=>{i=Math.max(0,Math.min(slides.length-1,i));slides[i].scrollTop=0;slides[i].scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest',inline:'start'});};
+const mark=()=>{const c=Math.round(deck.scrollLeft/deck.clientWidth);if(c!==cur){try{history.replaceState(null,'','#bild-'+(c+1))}catch(e){}}cur=c;db.forEach((d,i)=>d.setAttribute('aria-current',i===cur));$('count').textContent=(cur+1)+' / '+slides.length;$('prev').disabled=cur===0;$('next').disabled=cur===slides.length-1;};
+deck.addEventListener('scroll',()=>requestAnimationFrame(mark),{passive:true});
+db.forEach((d,i)=>d.addEventListener('click',()=>go(i)));
+$('prev').addEventListener('click',()=>go(cur-1));$('tocBtn').addEventListener('click',()=>go(0));$('startBtn').addEventListener('click',()=>go(1));$('next').addEventListener('click',()=>go(cur+1));
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}if(e.key==='Home'){e.preventDefault();go(0)}if(e.key==='End'){e.preventDefault();go(slides.length-1)}});
+const fromHash=()=>{const m=/^#bild-(\d+)$/.exec(location.hash);if(m){const i=+m[1]-1;if(i>=0&&i<slides.length)deck.scrollLeft=i*deck.clientWidth;}};
+addEventListener('hashchange',fromHash);fromHash();
+addEventListener('resize',()=>{deck.scrollLeft=cur*deck.clientWidth});
+mark();
+}
+</script>
+</body>
+</html>
